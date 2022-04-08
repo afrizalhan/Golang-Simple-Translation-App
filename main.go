@@ -14,32 +14,25 @@ import (
 )
 
 func main(){
-    fmt.Print("Enter Origin Language Code : ")
-    var orlang string
-    fmt.Scanln(&orlang)
-
-    fmt.Print("Enter Destination Language Code: ")
-    var deslang string
-    fmt.Scanln(&deslang)
-
+	fmt.Println("=========ENGLISH TO INDONESIAN TRANSLATOR==========")
 	reader := bufio.NewReader(os.Stdin)
-    fmt.Print("Enter Sentence : ")
+    fmt.Print("Enter English Sentence : ")
 	sentence, _ := reader.ReadString('\n')
 
 
-	asal, hasil := translate(orlang, deslang, sentence)
+	origin, trans := translate(sentence)
 
 	fmt.Println("=========RESULT==========")
-	fmt.Println("Origin Word :", asal)
-	fmt.Println("Translated Word :", hasil)
+	fmt.Println("Origin Word :", origin)
+	fmt.Println("Translated Word :", trans)
 }
 
-func translate(orlang string, deslang string, sentence string)(interface{}, interface{}){
+func translate(sentence string)(interface{}, interface{}){
 	endpoint := "https://translate.google.com/translate_a/single?client=at&dt=t&dt=ld&dt=qca&dt=rm&dt=bd&dj=1&ie=UTF-8&oe=UTF-8&inputm=2&otf=2&iid=1dd3b944-fa62-4b55-b330-74909a99969e"
 
 	data := url.Values{}
-    data.Set("sl", orlang)
-    data.Set("tl", deslang)
+    data.Set("sl", "en")
+    data.Set("tl", "id")
     data.Set("q", sentence)
 
     client := &http.Client{}
@@ -54,7 +47,10 @@ func translate(orlang string, deslang string, sentence string)(interface{}, inte
     if err != nil {
         log.Fatal(err)
     }
-    // log.Println(res.Status)
+    // fmt.Println(res.Status)
+	if res.Status != "200 OK"{
+		log.Fatal("failed to fetch result")
+	}
     defer res.Body.Close()
     body, err := ioutil.ReadAll(res.Body)
     if err != nil {
@@ -63,7 +59,7 @@ func translate(orlang string, deslang string, sentence string)(interface{}, inte
 	var data1 map[string][]interface{}
 	json.Unmarshal([]byte(body), &data1)
 	data2 := data1["sentences"][0].(map[string]interface{})
-	asal := data2["orig"]
-	hasil := data2["trans"]
-	return asal, hasil
+	origin := data2["orig"]
+	trans := data2["trans"]
+	return origin, trans
 }
